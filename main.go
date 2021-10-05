@@ -20,7 +20,7 @@ func main() {
 	}
 }
 
-func runApp(c *cli.Context)error  {
+func runApp(c *cli.Context) error {
 	fmt.Println("anb")
 	return nil
 }
