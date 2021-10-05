@@ -1,0 +1,14 @@
+server:
+  user: root
+  host: 1.2.3.4
+tasks:
+  - name: x
+    copy:
+      src: a
+      dest: b
+  - cmd:
+      - ls
+      - ls -alh
+  - name: ls-files
+    cmd: ls
+

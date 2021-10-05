@@ -1,0 +1,11 @@
+host: root@1.2.3.4
+tasks:
+  - name: x
+    copy:
+      src: a
+      dest: b
+  - cmds:
+      - ls
+      - ls -alh
+  - cmd:
+      ls
