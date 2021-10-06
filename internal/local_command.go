@@ -18,7 +18,7 @@ func NewLocalCommand() *LocalCommand {
 }
 
 func (r *LocalCommand) Md5File(file string) (string, error) {
-	out, err := runCommand("md5sum", file)
+	out, err := r.RunCommand("md5sum", file)
 	if err != nil {
 		return "", err
 	}
@@ -29,7 +29,7 @@ func (r *LocalCommand) Md5File(file string) (string, error) {
 	return "", fmt.Errorf("md5sum response %q not valid", out)
 }
 
-func runCommand(cmd string, args ...string) (string, error) {
+func (r *LocalCommand) RunCommand(cmd string, args ...string) (string, error) {
 	var bufout bytes.Buffer
 	var buferr bytes.Buffer
 	strings.Split(cmd, " ")

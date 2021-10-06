@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -35,9 +36,12 @@ type ConfigServer struct {
 }
 
 type ConfigTask struct {
-	Name string          `yaml:"name"`
-	Copy *ConfigTaskCopy `yaml:"copy"`
-	Cmd  *ConfigTaskCmd  `yaml:"cmd"`
+	Name       string          `yaml:"name"`
+	IfNotExist string          `yaml:"if_not_exist"`
+	IfExist    string          `yaml:"if_exist"`
+	Copy       *ConfigTaskCopy `yaml:"copy"`
+	Cmd        *ConfigTaskCmd  `yaml:"cmd"`
+	LocalCmd   *ConfigTaskCmd  `yaml:"local_cmd"`
 }
 
 type ConfigTaskCopy struct {
@@ -52,8 +56,9 @@ type ConfigTaskCmd struct {
 type TaskType string
 
 const (
-	TaskTypeCopy TaskType = "copy"
-	TaskTypeCmd  TaskType = "cmd"
+	TaskTypeCopy     TaskType = "copy"
+	TaskTypeCmd      TaskType = "cmd"
+	TaskTypeLocalCmd TaskType = "local_cmd"
 )
 
 func (r *ConfigTask) TaskType() TaskType {
@@ -62,6 +67,9 @@ func (r *ConfigTask) TaskType() TaskType {
 	}
 	if r.Cmd != nil {
 		return TaskTypeCmd
+	}
+	if r.LocalCmd != nil {
+		return TaskTypeLocalCmd
 	}
 	return ""
 }
@@ -86,4 +94,28 @@ func (r *ConfigTaskCmd) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func (r ConfigTaskCmd) MarshalYAML() (interface{}, error) {
 	return yaml.Marshal(r.Commands)
+}
+
+func (r *ConfigTask) ShouldRun() (string, bool) {
+	if r.IfNotExist != "" {
+		// 只有不存在，则运行（true）
+		if f, _ := os.Lstat(r.IfNotExist); f != nil {
+			return fmt.Sprintf("%q should not exist, skip", r.IfNotExist), false
+		}
+	}
+
+	if r.IfExist != "" {
+		if f, _ := os.Lstat(r.IfNotExist); f == nil {
+			return fmt.Sprintf("%q should exist, skip", r.IfExist), false
+		}
+	}
+
+	return "", true
+}
+
+func (r *ConfigTask) TaskName(idx int) string {
+	if r.Name != "" {
+		return r.Name
+	}
+	return fmt.Sprintf("task #%d", idx+1)
 }

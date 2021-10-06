@@ -25,7 +25,46 @@ go get github.com/chyroc/anb
 
 ## Usage
 
-### exec command
+### Task Command Args
+
+- `if_not_exist`
+- `if_exist`
+- `dir`: support cmd and local_cmd task
+
+#### run task if path not exist
+
+```yaml
+server:
+  user: root
+  host: 1.2.3.4
+tasks:
+  - name: "clone app"
+    if_not_exist: app-path
+    local_cmd:
+      - git clone https://github.com/user/repo app-path
+```
+
+#### run task if path exist && run command dir
+
+```yaml
+server:
+  user: root
+  host: 1.2.3.4
+tasks:
+  - name: "pull app"
+    if_exist: app-path
+    dir: app-path
+    local_cmd:
+      - git pull
+```
+
+### Support Multi Task
+
+- cmd
+- local_cmd
+- copy
+
+#### exec server command
 
 ```yaml
 server:
@@ -39,7 +78,21 @@ tasks:
       - ls -alh
 ```
 
-### copy files from local to server
+#### exec local command
+
+```yaml
+server:
+  user: root
+  host: 1.2.3.4
+tasks:
+  - name: exec local command
+    local_cmd: go build -o /tmp/bin-file main.go
+  - name: exec server commands
+    cmd:
+      - ls
+```
+
+#### copy files from local to server
 
 ```yaml
 server:

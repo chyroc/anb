@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -60,19 +61,23 @@ func (r *SSHCommand) CopyAnyFile(src, dest string) error {
 			return err
 		}
 		if created {
-			PrintfYellow("\tcopy: %q\n", src)
+			PrintfYellow("\t[copy] %q running...\n", src)
 		} else {
-			PrintfGreen("\tskip: %q\n", src)
+			PrintfGreen("\t[copy] %q skip\n", src)
 		}
 	} else {
+		fd, _ := os.Lstat(filepath.Dir(src))
+		if err := r.CreateDir(filepath.Dir(dest), GetFilePerm(fd.Mode())); err != nil {
+			return err
+		}
 		copied, err := r.CopyFile(src, dest)
 		if err != nil {
 			return err
 		}
 		if copied {
-			PrintfYellow("\tcopy: %q\n", src)
+			PrintfYellow("\t[copy] %q running...\n", src)
 		} else {
-			PrintfGreen("\tskip: %q\n", src)
+			PrintfGreen("\t[copy] %q skip\n", src)
 		}
 	}
 	return nil
