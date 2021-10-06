@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"os"
 )
 
 type RunRequest struct {
@@ -31,40 +30,7 @@ func Run(req *RunRequest) error {
 		case TaskTypeCopy:
 			d := task.Copy
 			PrintfWhite("[copy] %q => %q\n", d.Src, d.Dest)
-
-			srcInfo, err := os.Stat(d.Src)
-			if err != nil {
-				return err
-			}
-			if srcInfo.IsDir() {
-				err = Walk(d.Src, d.Dest, func(isDir bool, path, target string) error {
-					f, _ := os.Stat(path)
-					if isDir {
-						return cli.CreateDir(target, GetFilePerm(f.Mode()))
-					}
-					copied, err := cli.CopyFile(path, target)
-					if err != nil {
-						return err
-					}
-					if copied {
-						PrintfYellow("\tcopy: %q\n", path)
-					} else {
-						PrintfGreen("\tskip: %q\n", path)
-					}
-					return nil
-				})
-				return err
-			} else {
-				copied, err := cli.CopyFile(d.Src, d.Dest)
-				if err != nil {
-					return err
-				}
-				if copied {
-					PrintfYellow("\tcopy: %q\n", d.Src)
-				} else {
-					PrintfGreen("\tskip: %q\n", d.Src)
-				}
-			}
+			return cli.CopyAnyFile(d.Src, d.Dest)
 		case TaskTypeCmd:
 			for _, cmd := range task.Cmd.Commands {
 				PrintfWhite("[cmd] %q\n", cmd)

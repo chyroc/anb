@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// 注意：walk 函数不要直接用 f 函数处理 dir 自己，否则会死循环
 func Walk(dir, dir2 string, f func(isDir bool, path, target string) error) error {
 	joinPath := func(a, b string) string {
 		if strings.HasSuffix(a, "/") {

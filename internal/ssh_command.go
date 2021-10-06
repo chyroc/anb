@@ -41,6 +41,43 @@ func (r *SSHCommand) Md5File(file string) (string, error) {
 	return "", fmt.Errorf("md5sum response %q not valid", out)
 }
 
+func (r *SSHCommand) CopyAnyFile(src, dest string) error {
+	f, _ := os.Lstat(src)
+	if f.IsDir() {
+		if err := r.CreateDir(dest, GetFilePerm(f.Mode())); err != nil {
+			return err
+		}
+		return Walk(src, dest, func(isDir bool, path, target string) error {
+			return r.CopyAnyFile(path, target)
+		})
+	} else if f.Mode()&os.ModeSymlink != 0 {
+		link, err := os.Readlink(src)
+		if err != nil {
+			return err
+		}
+		created, err := r.CreateHardLink(link, dest)
+		if err != nil {
+			return err
+		}
+		if created {
+			PrintfYellow("\tcopy: %q\n", src)
+		} else {
+			PrintfGreen("\tskip: %q\n", src)
+		}
+	} else {
+		copied, err := r.CopyFile(src, dest)
+		if err != nil {
+			return err
+		}
+		if copied {
+			PrintfYellow("\tcopy: %q\n", src)
+		} else {
+			PrintfGreen("\tskip: %q\n", src)
+		}
+	}
+	return nil
+}
+
 func (r *SSHCommand) CreateDir(dir, filemode string) error {
 	_, err := r.Ins.Run(fmt.Sprintf("mkdir -m %s -p %s", filemode, dir))
 	return err
@@ -63,4 +100,17 @@ func (r *SSHCommand) CopyFile(src, dest string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (r *SSHCommand) CreateHardLink(source, target string) (bool, error) {
+	// a -> b
+	out, err := r.Ins.Run("ls -l " + target)
+	if out != "" {
+		if strings.Contains(out, " -> "+source) {
+			return false, nil
+		}
+		return false, fmt.Errorf("%q exist", target)
+	}
+	_, err = r.Ins.Run(fmt.Sprintf("ln -s %s %s", source, target))
+	return true, err
 }
