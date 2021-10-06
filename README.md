@@ -11,10 +11,47 @@
 
 ## Install
 
+By Brew:
+
+```shell
+brew install chyroc/tap/anb
+```
+
+By Go:
+
 ```shell
 go get github.com/chyroc/anb
 ```
 
 ## Usage
 
+### exec command
 
+```yaml
+server:
+  user: root
+  host: 1.2.3.4
+tasks:
+  - cmd: ls
+  - name: exec commands
+    cmd:
+      - ls
+      - ls -alh
+```
+
+### copy files from local to server
+
+```yaml
+server:
+  user: root
+  host: 1.2.3.4
+tasks:
+  - name: "copy file"
+    copy:
+      src: README.md
+      dest: /tmp/README.md
+  - name: "copy dir"
+    copy:
+      src: ./config/
+      dest: /tmp/config/
+```

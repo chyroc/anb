@@ -72,7 +72,7 @@ func Run(req *RunRequest) error {
 				if err != nil {
 					return err
 				}
-				fmt.Println(out)
+				fmt.Print(out)
 			}
 		default:
 			return fmt.Errorf("不支持 " + string(task.TaskType()))
