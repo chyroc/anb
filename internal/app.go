@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 )
 
@@ -38,29 +37,33 @@ func Run(req *RunRequest) error {
 				return err
 			}
 			if srcInfo.IsDir() {
-				return fmt.Errorf("不支持 文件夹")
+				err = Walk(d.Src, d.Dest, func(isDir bool, path, target string) error {
+					f, _ := os.Stat(path)
+					if isDir {
+						return cli.CreateDir(target, GetFilePerm(f.Mode()))
+					}
+					copied, err := cli.CopyFile(path, target)
+					if err != nil {
+						return err
+					}
+					if copied {
+						PrintfYellow("\tcopy: %q\n", path)
+					} else {
+						PrintfGreen("\tskip: %q\n", path)
+					}
+					return nil
+				})
+				return err
 			} else {
-				destMd5, err := cli.Md5File(d.Dest)
+				copied, err := cli.CopyFile(d.Src, d.Dest)
 				if err != nil {
 					return err
 				}
-				srcMd5, err := NewLocalCommand().Md5File(d.Src)
-				if err != nil {
-					return err
+				if copied {
+					PrintfYellow("\tcopy: %q\n", d.Src)
+				} else {
+					PrintfGreen("\tskip: %q\n", d.Src)
 				}
-				if srcMd5 == destMd5 {
-					PrintfGreen("\tequal file, skip\n")
-					continue
-				}
-				bs, err := ioutil.ReadFile(d.Src)
-				if err != nil {
-					return err
-				}
-				err = cli.Ins.WriteFile(bs, GetFilePerm(srcInfo.Mode()), d.Dest)
-				if err != nil {
-					return err
-				}
-				PrintfYellow("\tcopy...\n")
 			}
 		case TaskTypeCmd:
 			for _, cmd := range task.Cmd.Commands {

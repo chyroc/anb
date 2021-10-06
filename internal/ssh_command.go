@@ -2,6 +2,8 @@ package internal
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -37,4 +39,28 @@ func (r *SSHCommand) Md5File(file string) (string, error) {
 		return ss[0], nil
 	}
 	return "", fmt.Errorf("md5sum response %q not valid", out)
+}
+
+func (r *SSHCommand) CreateDir(dir, filemode string) error {
+	_, err := r.Ins.Run(fmt.Sprintf("mkdir -m %s -p %s", filemode, dir))
+	return err
+}
+
+func (r *SSHCommand) CopyFile(src, dest string) (bool, error) {
+	f, _ := os.Stat(src)
+
+	destMd5, _ := r.Md5File(dest)
+	srcMd5, _ := NewLocalCommand().Md5File(src)
+	if srcMd5 != "" && srcMd5 == destMd5 {
+		return false, nil
+	}
+	bs, err := ioutil.ReadFile(src)
+	if err != nil {
+		return false, err
+	}
+
+	if err = r.Ins.WriteFile(bs, GetFilePerm(f.Mode()), dest); err != nil {
+		return false, err
+	}
+	return true, nil
 }

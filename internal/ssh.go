@@ -95,41 +95,30 @@ func (r *SSH) WriteFile(bs []byte, filemode string, filename string) (finalErr e
 
 		stdin, err := session.StdinPipe()
 		if err != nil {
-			fmt.Println(1)
 			finalErr = err
 			return
 		}
 		defer stdin.Close()
 
-		_, err = fmt.Fprintf(stdin, "C%s %d %s\n", filemode, len(bs), base)
-		if err != nil {
-			fmt.Println(2)
+		if _, err = fmt.Fprintf(stdin, "C%s %d %s\n", filemode, len(bs), base); err != nil {
 			finalErr = err
 			return
 		}
-		_, err = stdin.Write(bs)
-		// _, err = io.Copy(stdin, reader)
-		if err != nil {
-			fmt.Println(3)
+		if _, err = stdin.Write(bs); err != nil {
 			finalErr = err
 			return
 		}
-		_, err = fmt.Fprint(stdin, "\x00")
-		if err != nil {
-			fmt.Println(4)
+		if _, err = fmt.Fprint(stdin, "\x00"); err != nil {
 			finalErr = err
 			return
 		}
 	}()
 
 	if finalErr != nil {
-		fmt.Println(5)
 		return finalErr
 	}
 
-	err = session.Run("/usr/bin/scp -qt " + dir)
-	if err != nil {
-		fmt.Println(6)
+	if err = session.Run("/usr/bin/scp -qt " + dir); err != nil {
 		return err
 	}
 	wg.Wait()
