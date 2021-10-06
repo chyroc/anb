@@ -1,4 +1,4 @@
-package internal
+package config
 
 import (
 	"os"
@@ -39,7 +39,10 @@ func Test_Config(t *testing.T) {
 
 func chTestDir() {
 	pwd, _ := os.Getwd()
-	if strings.HasSuffix(pwd, "/internal") {
-		_ = os.Chdir("..")
+	if strings.Contains(pwd, "/internal") {
+		count := strings.Count(strings.SplitN(pwd, "/internal", 2)[1], "/")
+		for i := 0; i <= count; i++ {
+			_ = os.Chdir("..")
+		}
 	}
 }

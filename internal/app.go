@@ -3,6 +3,8 @@ package internal
 import (
 	"fmt"
 	"strings"
+
+	"github.com/chyroc/anb/internal/config"
 )
 
 type RunRequest struct {
@@ -10,7 +12,7 @@ type RunRequest struct {
 }
 
 func Run(req *RunRequest) error {
-	conf, err := LoadConfig(req.Config)
+	conf, err := config.LoadConfig(req.Config)
 	if err != nil {
 		return err
 	}
@@ -24,23 +26,25 @@ func Run(req *RunRequest) error {
 	if err = cli.Dial(); err != nil {
 		return err
 	}
-	PrintfWhite("[server] %s connected\n", conf.ServerHost())
+	PrintfWhite("[server] %s connected\n", conf.Server.ServerHost())
 
 	for idx, task := range conf.Tasks {
 		PrintfWhite("[task] %s\n", task.TaskName(idx))
 
-		if reason, shouldRun := task.ShouldRun(); !shouldRun {
-			PrintfGreen("\t%s\n", reason)
+		if reason, shouldRun, err := task.ShouldRun(); err != nil {
+			return err
+		} else if !shouldRun {
+			PrintfGreen("\t[skip] %s\n", reason)
 			continue
 		}
 		switch task.TaskType() {
-		case TaskTypeCopy:
+		case config.TaskTypeCopy:
 			d := task.Copy
 			PrintfWhite("\t[copy] %q => %q\n", d.Src, d.Dest)
 			if err := cli.CopyAnyFile(d.Src, d.Dest); err != nil {
 				return err
 			}
-		case TaskTypeCmd:
+		case config.TaskTypeCmd:
 			for _, cmd := range task.Cmd.Commands {
 				PrintfWhite("\t[cmd] %q\n", cmd)
 				out, err := cli.Run(cmd)
@@ -49,7 +53,7 @@ func Run(req *RunRequest) error {
 				}
 				fmt.Print(out)
 			}
-		case TaskTypeLocalCmd:
+		case config.TaskTypeLocalCmd:
 			for _, cmd := range task.LocalCmd.Commands {
 				cmds := strings.Fields(cmd)
 				PrintfWhite("\t[local_cmd] %q\n", cmd)
