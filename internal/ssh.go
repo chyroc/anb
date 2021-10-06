@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -53,21 +54,87 @@ func (r *SSH) Dial() error {
 	return nil
 }
 
+func (r *SSH) Close() error {
+	return r.client.Close()
+}
+
 func (r *SSH) Run(cmd string) (string, error) {
 	session, err := r.client.NewSession()
 	if err != nil {
 		return "", fmt.Errorf("new session fail: %w", err)
 	}
 
-	defer session.Close()
-
-	var buf bytes.Buffer
-	session.Stdout = &buf
+	var bufout bytes.Buffer
+	var buferr bytes.Buffer
+	session.Stdout = &bufout
+	session.Stderr = &buferr
 	if err := session.Run(cmd); err != nil {
-		return "", fmt.Errorf("run %q fail: %w", cmd, err)
+		ser := strings.TrimSpace(buferr.String())
+		if ser != "" {
+			return "", fmt.Errorf("run %q fail: %s", cmd, ser)
+		}
+		return bufout.String(), fmt.Errorf("run %q fail: %w", cmd, err)
 	}
 
-	return buf.String(), nil
+	return bufout.String(), nil
+}
+
+// https://stackoverflow.com/questions/53256373/sending-file-over-ssh-in-go
+func (r *SSH) WriteFile(bs []byte, filemode string, filename string) (finalErr error) {
+	session, err := r.client.NewSession()
+	if err != nil {
+		return fmt.Errorf("new session fail: %w", err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	dir, base := filepath.Split(filename)
+
+	go func() {
+		defer wg.Done()
+
+		stdin, err := session.StdinPipe()
+		if err != nil {
+			fmt.Println(1)
+			finalErr = err
+			return
+		}
+		defer stdin.Close()
+
+		_, err = fmt.Fprintf(stdin, "C%s %d %s\n", filemode, len(bs), base)
+		if err != nil {
+			fmt.Println(2)
+			finalErr = err
+			return
+		}
+		_, err = stdin.Write(bs)
+		// _, err = io.Copy(stdin, reader)
+		if err != nil {
+			fmt.Println(3)
+			finalErr = err
+			return
+		}
+		_, err = fmt.Fprint(stdin, "\x00")
+		if err != nil {
+			fmt.Println(4)
+			finalErr = err
+			return
+		}
+	}()
+
+	if finalErr != nil {
+		fmt.Println(5)
+		return finalErr
+	}
+
+	err = session.Run("/usr/bin/scp -qt " + dir)
+	if err != nil {
+		fmt.Println(6)
+		return err
+	}
+	wg.Wait()
+
+	return nil
 }
 
 func (r *SSH) initAuthMethod() {

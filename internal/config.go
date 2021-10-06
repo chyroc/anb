@@ -25,6 +25,10 @@ type Config struct {
 	Tasks  []*ConfigTask `yaml:"tasks"`
 }
 
+func (r *Config) ServerHost() string {
+	return r.Server.User + "@" + r.Server.Host
+}
+
 type ConfigServer struct {
 	User string `yaml:"user"`
 	Host string `yaml:"host"`

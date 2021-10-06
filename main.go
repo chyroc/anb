@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
+	"github.com/chyroc/anb/internal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -21,6 +21,9 @@ func main() {
 }
 
 func runApp(c *cli.Context) error {
-	fmt.Println("anb")
-	return nil
+	config := c.Args().First()
+
+	return internal.Run(&internal.RunRequest{
+		Config: config,
+	})
 }
