@@ -2,10 +2,8 @@ module github.com/chyroc/anb
 
 go 1.17
 
-replace github.com/chyroc/anbko => ../anbko
-
 require (
-	github.com/chyroc/anbko v0.2.0
+	github.com/chyroc/anbko v0.3.0
 	github.com/fatih/color v1.13.0
 	github.com/google/uuid v1.3.0
 	github.com/stretchr/testify v1.7.0
