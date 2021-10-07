@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,7 +32,6 @@ func Test_Config(t *testing.T) {
 			as.Equal([]string{"ls"}, conf.Tasks[2].Cmd.Commands)
 			as.Equal(TaskTypeCmd, conf.Tasks[2].TaskType())
 		}
-		spew.Dump(conf)
 	})
 }
 

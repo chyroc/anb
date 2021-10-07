@@ -22,11 +22,9 @@ import (
 // if: (exist(/path1) || !exist(/path2)) && exist(/path3)
 type IfExpr string
 
-func (r IfExpr) IsTrue() (bool, error) {
+func (r IfExpr) IsTrue(vals Any) (bool, error) {
 	s := strings.TrimSpace(string(r))
-	return ExecBoolScript(s, map[string]interface{}{
-		"$tasks": Any{},
-	})
+	return ExecBoolScript(s, vals)
 }
 
 type Any map[string]interface{}

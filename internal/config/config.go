@@ -8,7 +8,7 @@ import (
 
 type Config struct {
 	Server *ConfigServer `yaml:"server"`
-	Tasks  []*ConfigTask `yaml:"tasks"`
+	Tasks  []*Task       `yaml:"tasks"`
 }
 
 func LoadConfig(file string) (*Config, error) {

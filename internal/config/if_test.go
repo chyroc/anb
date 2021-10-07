@@ -20,7 +20,7 @@ func TestIfExpr_IsTrue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.r.IsTrue()
+			got, err := tt.r.IsTrue(Any{})
 			if tt.ErrContain != "" {
 				as.NotNil(err)
 				as.Contains(err.Error(), tt.ErrContain)

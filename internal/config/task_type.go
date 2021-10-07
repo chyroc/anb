@@ -8,7 +8,7 @@ const (
 	TaskTypeLocalCmd TaskType = "local_cmd"
 )
 
-func (r *ConfigTask) TaskType() TaskType {
+func (r *Task) TaskType() TaskType {
 	if r.Copy != nil {
 		return TaskTypeCopy
 	}
