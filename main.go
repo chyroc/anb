@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/chyroc/anb/internal"
+	"github.com/chyroc/anb/internal/app"
 	"github.com/urfave/cli/v2"
 )
 
@@ -23,7 +23,7 @@ func main() {
 func runApp(c *cli.Context) error {
 	config := c.Args().First()
 
-	return internal.Run(&internal.RunRequest{
+	return app.Run(&app.RunRequest{
 		Config: config,
 	})
 }

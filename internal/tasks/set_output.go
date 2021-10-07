@@ -1,4 +1,4 @@
-package task_command
+package tasks
 
 import (
 	"regexp"
@@ -11,7 +11,7 @@ import (
 // echo "::workflow-command parameter1={data},parameter2={data}::{command value}"
 
 // ::set-output name=SELECTED_COLOR::green
-func ParseOutput(s string) config.Any {
+func parseOutput(s string) config.Any {
 	res := config.Any{}
 	for _, v := range strings.Split(s, "\n") {
 		vv := regSetOutput.FindStringSubmatch(v)

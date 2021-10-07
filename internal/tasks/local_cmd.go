@@ -5,27 +5,21 @@ import (
 
 	"github.com/chyroc/anb/internal"
 	"github.com/chyroc/anb/internal/config"
-	"github.com/chyroc/anb/internal/task_command"
 )
 
 func RunLocalCmd(task *config.Task, cli *internal.SSHCommand, vals config.Any) error {
+	if task.Dir != "" {
+		internal.PrintfWhite("\t[local_cmd] dir=%q\n", task.Dir)
+	}
 	for _, cmd := range task.LocalCmd.Commands {
-		cmds := internal.SplitShellCommand(cmd)
 		internal.PrintfWhite("\t[local_cmd] %q\n", cmd)
-		out, err := internal.NewLocalCommand().RunCommand(cmds[0], cmds[1:]...)
+		out, err := internal.NewLocalCommand().RunCommand(joinCmd(task.Dir, cmd))
 		if err != nil {
 			return err
 		}
 		fmt.Print(out)
 
-		if output := task_command.ParseOutput(out); len(output) > 0 {
-			if _, ok := vals["$tasks"].(config.Any)[task.ID]; !ok {
-				vals["$tasks"].(config.Any)[task.ID] = config.Any{}
-			}
-			for k, v := range output {
-				vals["$tasks"].(config.Any)[task.ID].(config.Any)[k] = v
-			}
-		}
+		appendVals(task.ID, out, vals)
 	}
 
 	return nil

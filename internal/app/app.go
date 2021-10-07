@@ -1,8 +1,9 @@
-package internal
+package app
 
 import (
 	"fmt"
 
+	"github.com/chyroc/anb/internal"
 	"github.com/chyroc/anb/internal/config"
 	"github.com/chyroc/anb/internal/tasks"
 )
@@ -17,7 +18,7 @@ func Run(req *RunRequest) error {
 		return err
 	}
 
-	cli := NewSSHCommand(NewSSH(&SSHConfig{
+	cli := internal.NewSSHCommand(internal.NewSSH(&internal.SSHConfig{
 		User: conf.Server.User,
 		Host: conf.Server.Host,
 	}))
@@ -26,17 +27,17 @@ func Run(req *RunRequest) error {
 	if err = cli.Dial(); err != nil {
 		return err
 	}
-	PrintfWhite("[server] %s connected\n", conf.Server.ServerHost())
+	internal.PrintfWhite("[server] %s connected\n", conf.Server.ServerHost())
 
 	vals := config.Any{"$tasks": config.Any{}}
 
 	for idx, task := range conf.Tasks {
-		PrintfWhite("[task] %s\n", task.TaskName(idx))
+		internal.PrintfWhite("[task] %s\n", task.TaskName(idx))
 
 		if reason, shouldRun, err := task.ShouldRun(vals); err != nil {
 			return err
 		} else if !shouldRun {
-			PrintfGreen("\t[skip] %s\n", reason)
+			internal.PrintfGreen("\t[skip] %s\n", reason)
 			continue
 		}
 		switch task.TaskType() {
