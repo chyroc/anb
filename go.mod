@@ -7,6 +7,7 @@ replace github.com/chyroc/anbko => ../anbko
 require (
 	github.com/chyroc/anbko v0.2.0
 	github.com/fatih/color v1.13.0
+	github.com/google/uuid v1.3.0
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
