@@ -3,12 +3,14 @@ package internal
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
+	"github.com/chyroc/chaos"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -69,6 +71,28 @@ func (r *SSH) Run(cmd string, args ...interface{}) (string, error) {
 	var buferr bytes.Buffer
 	session.Stdout = &bufout
 	session.Stderr = &buferr
+	if err := session.Run(cmd); err != nil {
+		ser := strings.TrimSpace(buferr.String())
+		if ser != "" {
+			return "", fmt.Errorf("run %q fail: %s", cmd, ser)
+		}
+		return bufout.String(), fmt.Errorf("run %q fail: %w", cmd, err)
+	}
+
+	return bufout.String(), nil
+}
+
+func (r *SSH) RunInPipe(cmd string, args ...interface{}) (string, error) {
+	cmd = fmt.Sprintf(cmd, args...)
+	session, err := r.client.NewSession()
+	if err != nil {
+		return "", fmt.Errorf("new session fail: %w", err)
+	}
+
+	bufout := new(bytes.Buffer)
+	buferr := new(bytes.Buffer)
+	session.Stdout = chaos.TeeWriter([]io.Writer{bufout, os.Stdout}, nil)
+	session.Stderr = chaos.TeeWriter([]io.Writer{buferr, os.Stderr}, nil)
 	if err := session.Run(cmd); err != nil {
 		ser := strings.TrimSpace(buferr.String())
 		if ser != "" {

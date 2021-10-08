@@ -3,8 +3,12 @@ package internal
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/chyroc/chaos"
 )
 
 type Command interface {
@@ -35,6 +39,23 @@ func (r *LocalCommand) RunCommand(cmd string) (string, error) {
 	c := exec.Command("/bin/sh", "-c", cmd)
 	c.Stdout = &bufout
 	c.Stderr = &buferr
+	if err := c.Run(); err != nil {
+		ser := strings.TrimSpace(buferr.String())
+		if ser != "" {
+			return "", fmt.Errorf("run %q fail: %s", cmd, ser)
+		}
+		return bufout.String(), fmt.Errorf("run %q fail: %w", cmd, err)
+	}
+
+	return bufout.String(), nil
+}
+
+func (r *LocalCommand) RunCommandInPipe(cmd string) (string, error) {
+	bufout := new(bytes.Buffer)
+	buferr := new(bytes.Buffer)
+	c := exec.Command("/bin/sh", "-c", cmd)
+	c.Stdout = chaos.TeeWriter([]io.Writer{bufout, os.Stdout}, nil)
+	c.Stderr = chaos.TeeWriter([]io.Writer{buferr, os.Stderr}, nil)
 	if err := c.Run(); err != nil {
 		ser := strings.TrimSpace(buferr.String())
 		if ser != "" {

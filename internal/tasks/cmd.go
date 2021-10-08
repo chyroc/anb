@@ -13,11 +13,10 @@ func RunCmd(task *config.Task, cli *internal.SSHCommand, vals config.Any) error 
 	}
 	for _, cmd := range task.Cmd.Commands {
 		internal.PrintfWhite("\t[cmd] %q\n", cmd)
-		out, err := cli.Run(joinCmd(task.Dir, cmd))
+		out, err := cli.RunInPipe(joinCmd(task.Dir, cmd))
 		if err != nil {
 			return err
 		}
-		fmt.Print(out)
 
 		appendVals(task.ID, out, vals)
 	}

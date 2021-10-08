@@ -1,8 +1,6 @@
 package tasks
 
 import (
-	"fmt"
-
 	"github.com/chyroc/anb/internal"
 	"github.com/chyroc/anb/internal/config"
 )
@@ -13,11 +11,10 @@ func RunLocalCmd(task *config.Task, cli *internal.SSHCommand, vals config.Any) e
 	}
 	for _, cmd := range task.LocalCmd.Commands {
 		internal.PrintfWhite("\t[local_cmd] %q\n", cmd)
-		out, err := internal.NewLocalCommand().RunCommand(joinCmd(task.Dir, cmd))
+		out, err := internal.NewLocalCommand().RunCommandInPipe(joinCmd(task.Dir, cmd))
 		if err != nil {
 			return err
 		}
-		fmt.Print(out)
 
 		appendVals(task.ID, out, vals)
 	}

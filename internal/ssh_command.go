@@ -28,6 +28,10 @@ func (r *SSHCommand) Run(cmd string) (string, error) {
 	return r.Ins.Run(cmd)
 }
 
+func (r *SSHCommand) RunInPipe(cmd string) (string, error) {
+	return r.Ins.RunInPipe(cmd)
+}
+
 func (r *SSHCommand) Close() error {
 	return r.Ins.Close()
 }
