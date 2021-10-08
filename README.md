@@ -27,8 +27,10 @@ go get github.com/chyroc/anb
 
 ### Task Command Args
 
-- `if_not_exist`
-- `if_exist`
+- `id`: unique id for task, can be used with set-output command
+- `if`
+  - `if` args support `exist` function
+  - and `!`, `&&`, `||` operator
 - `dir`: support cmd and local_cmd task
 
 #### run task if path not exist
@@ -39,12 +41,13 @@ server:
   host: 1.2.3.4
 tasks:
   - name: "clone app"
-    if_not_exist: app-path
+    if: |
+      !exist("/app-path")
     local_cmd:
       - git clone https://github.com/user/repo app-path
 ```
 
-#### run task if path exist && run command dir
+#### run task if path exist && run command in dir
 
 ```yaml
 server:
@@ -52,7 +55,7 @@ server:
   host: 1.2.3.4
 tasks:
   - name: "pull app"
-    if_exist: app-path
+    if: exist("/app-path")
     dir: app-path
     local_cmd:
       - git pull
@@ -63,6 +66,7 @@ tasks:
 - cmd
 - local_cmd
 - upload
+- download
 
 #### exec server command
 
@@ -107,4 +111,21 @@ tasks:
     upload:
       src: ./config/
       dest: /tmp/config/
+```
+
+#### download files from server to local
+
+```yaml
+server:
+  user: root
+  host: 1.2.3.4
+tasks:
+  - name: "download file"
+    upload:
+      src: /tmp/server-README.md
+      dest: /tmp/local-README.md
+  - name: "upload dir"
+    upload:
+      src: /tmp/server-config/
+      dest: /tmp/local-config/
 ```

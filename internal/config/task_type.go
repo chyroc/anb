@@ -3,9 +3,10 @@ package config
 type TaskType string
 
 const (
-	TaskTypeUpload TaskType = "upload"
-	TaskTypeCmd    TaskType = "cmd"
+	TaskTypeUpload   TaskType = "upload"
+	TaskTypeCmd      TaskType = "cmd"
 	TaskTypeLocalCmd TaskType = "local_cmd"
+	TaskTypeDownload TaskType = "download"
 )
 
 func (r *Task) TaskType() TaskType {
@@ -17,6 +18,9 @@ func (r *Task) TaskType() TaskType {
 	}
 	if r.LocalCmd != nil {
 		return TaskTypeLocalCmd
+	}
+	if r.Download != nil {
+		return TaskTypeDownload
 	}
 	return ""
 }

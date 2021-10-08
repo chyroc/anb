@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/chyroc/chaos"
+	"github.com/hnakamur/go-scp"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -22,6 +23,10 @@ type SSH struct {
 
 	initAuthMethodOnce sync.Once
 	authMethod         ssh.AuthMethod
+}
+
+func (r *SSH) Client() *ssh.Client {
+	return r.client
 }
 
 type SSHConfig struct {
@@ -105,6 +110,7 @@ func (r *SSH) RunInPipe(cmd string, args ...interface{}) (string, error) {
 }
 
 // https://stackoverflow.com/questions/53256373/sending-file-over-ssh-in-go
+// https://itectec.com/unixlinux/ssh-the-protocol-for-sending-files-over-ssh-in-code/
 func (r *SSH) WriteFile(bs []byte, filemode string, filename string) (finalErr error) {
 	session, err := r.client.NewSession()
 	if err != nil {
@@ -177,6 +183,73 @@ func (r *SSH) initAuthMethod() {
 	})
 }
 
+func (r *SSH) Upload(src, dest string) error {
+	stat, err := os.Stat(src) // scp 不支持 ln，所以这里暂时这么写
+	if err != nil {
+		return err
+	}
+
+	rr := scp.NewSCP(r.client)
+	if stat.IsDir() {
+		return rr.SendDir(src, dest, func(parentDir string, info os.FileInfo) (bool, error) {
+			if info.IsDir() {
+				return true, nil
+			}
+			localPath := parentDir + "/" + info.Name()
+			remotePath := GetRemoteRevPath(src, dest, localPath, false)
+			if r.isServerFileMd5Equal(localPath, remotePath) {
+				PrintfGreen("\t[upload] %q skip\n", src)
+				return false, nil
+			} else {
+				PrintfYellow("\t[upload] %q running...\n", src)
+				return true, nil
+			}
+		})
+	} else {
+		if r.isServerFileMd5Equal(src, dest) {
+			PrintfGreen("\t[upload] %q skip\n", src)
+			return nil
+		} else {
+			PrintfYellow("\t[upload] %q running...\n", src)
+			return rr.SendFile(src, dest)
+		}
+	}
+}
+
+func (r *SSH) Download(src, dest string) error {
+	out, err := r.Run("ls -ld %q | awk '{print $1}'", src)
+	if err != nil {
+		return err
+	}
+	isDir := strings.TrimSpace(out) != "" && strings.TrimSpace(out)[0] == 'd'
+
+	rr := scp.NewSCP(r.client)
+	if isDir {
+		return rr.ReceiveDir(src, dest, func(parentDir string, info os.FileInfo) (bool, error) {
+			if info.IsDir() {
+				return true, nil
+			}
+			localPath := parentDir + "/" + info.Name()
+			remotePath := GetRemoteRevPath(dest, src, localPath, true)
+			if r.isServerFileMd5Equal(localPath, remotePath) {
+				PrintfGreen("\t[download] %q skip\n", src)
+				return false, nil
+			} else {
+				PrintfYellow("\t[download] %q running...\n", src)
+				return true, nil
+			}
+		})
+	} else {
+		if r.isServerFileMd5Equal(dest, src) {
+			PrintfGreen("\t[download] %q skip\n", src)
+			return nil
+		} else {
+			PrintfYellow("\t[download] %q running...\n", src)
+			return rr.ReceiveFile(src, dest)
+		}
+	}
+}
+
 func (r *SSH) PrintMeta() {
 	fmt.Printf("--- ssh meta ---\n")
 	fmt.Printf("user: %s\n", r.client.User())
@@ -186,4 +259,22 @@ func (r *SSH) PrintMeta() {
 	fmt.Printf("remove-addr: %s\n", r.client.RemoteAddr())
 	fmt.Printf("local-addr: %s\n", r.client.LocalAddr())
 	fmt.Printf("--- ssh meta ---\n\n")
+}
+
+func (r *SSH) isServerFileMd5Equal(local, remote string) bool {
+	localMd5, _ := GetFileMd5(local)
+	sshMd5, _ := r.sshGetFileMd5(remote)
+	return sshMd5 != "" && localMd5 == sshMd5
+}
+
+func (r *SSH) sshGetFileMd5(file string) (string, error) {
+	out, err := r.Run("md5sum %s", file)
+	if err != nil {
+		return "", err
+	}
+	ss := strings.Split(out, " ")
+	if len(ss) >= 2 {
+		return ss[0], nil
+	}
+	return "", fmt.Errorf("invalid md5: %q", out)
 }

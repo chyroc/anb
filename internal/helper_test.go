@@ -32,3 +32,47 @@ func TestSplitShellCommand(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRemoteRevPath(t *testing.T) {
+	type args struct {
+		localRootPath     string
+		remoteRootPath    string
+		localPath         string
+		keepRemoteBaseDir bool
+	}
+	tests := []struct {
+		name       string
+		args       args
+		want       string
+		errContain string
+	}{
+		{
+			name: "1",
+			args: args{localRootPath: "./", remoteRootPath: "/root", localPath: "a.txt", keepRemoteBaseDir: false},
+			want: "/root/a.txt",
+		},
+		{
+			name: "2",
+			args: args{localRootPath: ".", remoteRootPath: "/root", localPath: "a.txt", keepRemoteBaseDir: false},
+			want: "/root/a.txt",
+		},
+		{
+			name: "3",
+			args: args{localRootPath: "./dir", remoteRootPath: "/root", localPath: "dir/a.txt", keepRemoteBaseDir: false},
+			want: "/root/a.txt",
+		},
+
+		{
+			name: "3",
+			args: args{localRootPath: "./dir", remoteRootPath: "/root", localPath: "dir/root/a.txt", keepRemoteBaseDir: true},
+			want: "/root/a.txt",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *testing.T) {
+				assert.Equal(t, tt.want, GetRemoteRevPath(tt.args.localRootPath, tt.args.remoteRootPath, tt.args.localPath, tt.args.keepRemoteBaseDir), tt.name+" / "+tt.args.localRootPath)
+			})
+		})
+	}
+}

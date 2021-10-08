@@ -7,7 +7,7 @@ import (
 	"github.com/chyroc/anb/internal/config"
 )
 
-func RunCmd(task *config.Task, cli *internal.SSHCommand, vals config.Any) error {
+func RunCmd(task *config.Task, cli *internal.SSH, vals config.Any) error {
 	if task.Dir != "" {
 		internal.PrintfWhite("\t[cmd] dir=%q\n", task.Dir)
 	}

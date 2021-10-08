@@ -10,17 +10,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func RunUploadTask(task *config.Task, cli *internal.SSHCommand) error {
+func RunUploadTask(task *config.Task, cli *internal.SSH) error {
 	d := task.Upload
 	internal.PrintfWhite("\t[upload] %q => %q\n", d.Src, d.Dest)
 	src := d.Src
 	if d.ExpendEnv {
 		src = expendFileEnv(src)
 	}
-	if err := cli.UploadAnyFile(src, d.Dest); err != nil {
-		return err
-	}
-	return nil
+	return cli.Upload(src, d.Dest)
 }
 
 func expendFileEnv(file string) string {

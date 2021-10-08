@@ -18,10 +18,10 @@ func Run(req *RunRequest) error {
 		return err
 	}
 
-	cli := internal.NewSSHCommand(internal.NewSSH(&internal.SSHConfig{
+	cli := internal.NewSSH(&internal.SSHConfig{
 		User: conf.Server.User,
 		Host: conf.Server.Host,
-	}))
+	})
 	defer cli.Close()
 
 	if err = cli.Dial(); err != nil {
@@ -45,6 +45,10 @@ func Run(req *RunRequest) error {
 			if err := tasks.RunUploadTask(task, cli); err != nil {
 				return err
 			}
+		case config.TaskTypeDownload:
+			if err := tasks.RunDownloadTask(task, cli, vals); err != nil {
+				return err
+			}
 		case config.TaskTypeCmd:
 			if err := tasks.RunCmd(task, cli, vals); err != nil {
 				return err
@@ -54,7 +58,7 @@ func Run(req *RunRequest) error {
 				return err
 			}
 		default:
-			return fmt.Errorf("不支持 " + string(task.TaskType()))
+			return fmt.Errorf("不支持命令: " + string(task.TaskType()))
 		}
 	}
 	return nil

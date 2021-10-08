@@ -13,9 +13,10 @@ type Task struct {
 	Dir  string `yaml:"dir"`  // 执行 command 的目录
 
 	// 下面是 task 的具体实现
-	Upload *ConfigTaskUpload `yaml:"upload"`
-	Cmd    *ConfigTaskCmd    `yaml:"cmd"`
-	LocalCmd *ConfigTaskCmd  `yaml:"local_cmd"`
+	Upload   *ConfigTaskUpload   `yaml:"upload"`
+	Download *ConfigTaskDownload `yaml:"download"`
+	Cmd      *ConfigTaskCmd      `yaml:"cmd"`
+	LocalCmd *ConfigTaskCmd      `yaml:"local_cmd"`
 }
 
 // 是否可以运行

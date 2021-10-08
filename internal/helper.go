@@ -1,9 +1,57 @@
 package internal
 
 import (
+	"crypto/md5"
+	"fmt"
 	"io/fs"
+	"io/ioutil"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
+
+// 如果是 receive，则 keepRemoteBaseDir 需要传 true，来保留远程目录的最后一个子目录
+func GetRemoteRevPath(localRootPath, remoteRootPath, localPath string, keepRemoteBaseDir bool) string {
+	localRootPath = trimPrefixRevPath(localRootPath)
+	if keepRemoteBaseDir && filepath.Base(remoteRootPath) != "" {
+		localRootPath = localRootPath + "/" + filepath.Base(remoteRootPath)
+	}
+	remoteRootPath = trimPrefixRevPath(remoteRootPath)
+	localPath = trimPrefixRevPath(localPath)
+	// trim prefix: ./ => ttt /root/oath
+	// findIndex
+	// return
+	a := localPath[len(localRootPath):]
+	if !strings.HasPrefix(a, "/") {
+		a = "/" + a
+	}
+	return remoteRootPath + a
+}
+
+// > path/a.txt
+// no prefix . or ./
+// no suffix /
+func trimPrefixRevPath(s string) string {
+	if strings.HasPrefix(s, "./") {
+		s = s[2:]
+	}
+	if strings.HasPrefix(s, ".") {
+		s = s[1:]
+	}
+	s = strings.TrimRight(s, "/")
+
+	return s
+}
+
+func GetFileMd5(file string) (string, error) {
+	bs, err := ioutil.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+	r := md5.New()
+	r.Write(bs)
+	return fmt.Sprintf("%x", r.Sum(nil)), nil
+}
 
 func GetFilePerm(fm fs.FileMode) string {
 	s := make([]int32, 3)
