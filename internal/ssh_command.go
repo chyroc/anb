@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type SSHCommand struct {
@@ -83,6 +85,11 @@ func (r *SSHCommand) CopyAnyFile(src, dest string) error {
 	return nil
 }
 
+func (r *SSHCommand) MoveFile(src, dest string) error {
+	_, err := r.Ins.Run("mv %s %s", src, dest)
+	return err
+}
+
 func (r *SSHCommand) CreateDir(dir, filemode string) error {
 	_, err := r.Ins.Run(fmt.Sprintf("mkdir -m %s -p %s", filemode, dir))
 	return err
@@ -101,9 +108,18 @@ func (r *SSHCommand) CopyFile(src, dest string) (bool, error) {
 		return false, err
 	}
 
-	if err = r.Ins.WriteFile(bs, GetFilePerm(f.Mode()), dest); err != nil {
+	fakeDest := "/tmp/" + uuid.New().String()
+	if err = r.Ins.WriteFile(bs, GetFilePerm(f.Mode()), fakeDest); err != nil {
 		return false, err
 	}
+
+	if err := r.MoveFile(fakeDest, dest); err != nil {
+		return false, err
+	}
+
+	// if err = r.Ins.WriteFile(bs, GetFilePerm(f.Mode()), dest); err != nil {
+	// 	return false, err
+	// }
 	return true, nil
 }
 

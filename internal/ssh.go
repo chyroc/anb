@@ -58,7 +58,8 @@ func (r *SSH) Close() error {
 	return r.client.Close()
 }
 
-func (r *SSH) Run(cmd string) (string, error) {
+func (r *SSH) Run(cmd string, args ...interface{}) (string, error) {
+	cmd = fmt.Sprintf(cmd, args...)
 	session, err := r.client.NewSession()
 	if err != nil {
 		return "", fmt.Errorf("new session fail: %w", err)
