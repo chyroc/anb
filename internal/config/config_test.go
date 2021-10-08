@@ -20,9 +20,9 @@ func Test_Config(t *testing.T) {
 
 		{
 			as.Equal("x", conf.Tasks[0].Name)
-			as.Equal("a", conf.Tasks[0].Copy.Src)
-			as.Equal("b", conf.Tasks[0].Copy.Dest)
-			as.Equal(TaskTypeCopy, conf.Tasks[0].TaskType())
+			as.Equal("a", conf.Tasks[0].Upload.Src)
+			as.Equal("b", conf.Tasks[0].Upload.Dest)
+			as.Equal(TaskTypeUpload, conf.Tasks[0].TaskType())
 		}
 		{
 			as.Equal([]string{"ls", "ls -alh"}, conf.Tasks[1].Cmd.Commands)

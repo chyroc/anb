@@ -10,14 +10,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func RunCopyTask(task *config.Task, cli *internal.SSHCommand) error {
-	d := task.Copy
-	internal.PrintfWhite("\t[copy] %q => %q\n", d.Src, d.Dest)
+func RunUploadTask(task *config.Task, cli *internal.SSHCommand) error {
+	d := task.Upload
+	internal.PrintfWhite("\t[upload] %q => %q\n", d.Src, d.Dest)
 	src := d.Src
 	if d.ExpendEnv {
 		src = expendFileEnv(src)
 	}
-	if err := cli.CopyAnyFile(src, d.Dest); err != nil {
+	if err := cli.UploadAnyFile(src, d.Dest); err != nil {
 		return err
 	}
 	return nil

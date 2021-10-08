@@ -41,8 +41,8 @@ func Run(req *RunRequest) error {
 			continue
 		}
 		switch task.TaskType() {
-		case config.TaskTypeCopy:
-			if err := tasks.RunCopyTask(task, cli); err != nil {
+		case config.TaskTypeUpload:
+			if err := tasks.RunUploadTask(task, cli); err != nil {
 				return err
 			}
 		case config.TaskTypeCmd:

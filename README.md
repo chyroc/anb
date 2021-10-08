@@ -62,7 +62,7 @@ tasks:
 
 - cmd
 - local_cmd
-- copy
+- upload
 
 #### exec server command
 
@@ -92,19 +92,19 @@ tasks:
       - ls
 ```
 
-#### copy files from local to server
+#### upload files from local to server
 
 ```yaml
 server:
   user: root
   host: 1.2.3.4
 tasks:
-  - name: "copy file"
-    copy:
+  - name: "upload file"
+    upload:
       src: README.md
       dest: /tmp/README.md
-  - name: "copy dir"
-    copy:
+  - name: "upload dir"
+    upload:
       src: ./config/
       dest: /tmp/config/
 ```

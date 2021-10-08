@@ -3,7 +3,7 @@ server:
   host: 1.2.3.4
 tasks:
   - name: x
-    copy:
+    upload:
       src: a
       dest: b
   - cmd:

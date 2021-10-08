@@ -48,14 +48,14 @@ func (r *SSHCommand) Md5File(file string) (string, error) {
 	return "", fmt.Errorf("md5sum response %q not valid", out)
 }
 
-func (r *SSHCommand) CopyAnyFile(src, dest string) error {
+func (r *SSHCommand) UploadAnyFile(src, dest string) error {
 	f, _ := os.Lstat(src)
 	if f.IsDir() {
 		if err := r.CreateDir(dest, GetFilePerm(f.Mode())); err != nil {
 			return err
 		}
 		return Walk(src, dest, func(isDir bool, path, target string) error {
-			return r.CopyAnyFile(path, target)
+			return r.UploadAnyFile(path, target)
 		})
 	} else if f.Mode()&os.ModeSymlink != 0 {
 		link, err := os.Readlink(src)
@@ -67,23 +67,23 @@ func (r *SSHCommand) CopyAnyFile(src, dest string) error {
 			return err
 		}
 		if created {
-			PrintfYellow("\t[copy] %q running...\n", src)
+			PrintfYellow("\t[upload] %q running...\n", src)
 		} else {
-			PrintfGreen("\t[copy] %q skip\n", src)
+			PrintfGreen("\t[upload] %q skip\n", src)
 		}
 	} else {
 		fd, _ := os.Lstat(filepath.Dir(src))
 		if err := r.CreateDir(filepath.Dir(dest), GetFilePerm(fd.Mode())); err != nil {
 			return err
 		}
-		copied, err := r.CopyFile(src, dest)
+		copied, err := r.UploadFile(src, dest)
 		if err != nil {
 			return err
 		}
 		if copied {
-			PrintfYellow("\t[copy] %q running...\n", src)
+			PrintfYellow("\t[upload] %q running...\n", src)
 		} else {
-			PrintfGreen("\t[copy] %q skip\n", src)
+			PrintfGreen("\t[upload] %q skip\n", src)
 		}
 	}
 	return nil
@@ -99,7 +99,7 @@ func (r *SSHCommand) CreateDir(dir, filemode string) error {
 	return err
 }
 
-func (r *SSHCommand) CopyFile(src, dest string) (bool, error) {
+func (r *SSHCommand) UploadFile(src, dest string) (bool, error) {
 	f, _ := os.Stat(src)
 
 	destMd5, _ := r.Md5File(dest)
