@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/chyroc/anbko v0.3.0
-	github.com/chyroc/chaos v0.1.0
+	github.com/chyroc/chaos v0.3.0
 	github.com/fatih/color v1.13.0
 	github.com/google/uuid v1.3.0
 	github.com/hnakamur/go-scp v1.0.2
