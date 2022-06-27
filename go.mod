@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hnakamur/go-scp v1.0.2
 	github.com/stretchr/testify v1.7.5
-	github.com/urfave/cli/v2 v2.10.2
+	github.com/urfave/cli/v2 v2.10.3
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	gopkg.in/yaml.v3 v3.0.1
 )
