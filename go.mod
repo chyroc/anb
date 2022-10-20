@@ -1,6 +1,6 @@
 module github.com/chyroc/anb
 
-go 1.17
+go 1.19
 
 require (
 	github.com/chyroc/anbko v0.3.0
@@ -9,8 +9,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hnakamur/go-scp v1.0.2
 	github.com/stretchr/testify v1.8.0
-	github.com/urfave/cli/v2 v2.17.1
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	github.com/urfave/cli/v2 v2.20.2
+	golang.org/x/crypto v0.1.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -22,5 +22,5 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
+	golang.org/x/sys v0.1.0 // indirect
 )
