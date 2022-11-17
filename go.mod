@@ -10,7 +10,7 @@ require (
 	github.com/hnakamur/go-scp v1.0.2
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli/v2 v2.23.4
-	golang.org/x/crypto v0.2.0
+	golang.org/x/crypto v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
