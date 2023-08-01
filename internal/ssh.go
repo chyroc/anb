@@ -62,7 +62,10 @@ func (r *SSH) Dial() error {
 }
 
 func (r *SSH) Close() error {
-	return r.client.Close()
+	if r.client != nil {
+		return r.client.Close()
+	}
+	return nil
 }
 
 func (r *SSH) Run(cmd string, args ...interface{}) (string, error) {
