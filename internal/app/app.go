@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	"github.com/chyroc/anb/internal"
 	"github.com/chyroc/anb/internal/config"
@@ -18,9 +19,17 @@ func Run(req *RunRequest) error {
 		return err
 	}
 
+	var privateKey []byte
+	if conf.Server.SSHPrivateKeyPath != "" {
+		if privateKey, err = ioutil.ReadFile(conf.Server.SSHPrivateKeyPath); err != nil {
+			return err
+		}
+	}
+
 	cli := internal.NewSSH(&internal.SSHConfig{
-		User: conf.Server.User,
-		Host: conf.Server.Host,
+		User:          conf.Server.User,
+		Host:          conf.Server.Host,
+		SSHPrivateKey: privateKey,
 	})
 	defer cli.Close()
 

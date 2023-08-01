@@ -16,8 +16,9 @@ import (
 )
 
 type SSH struct {
-	host string
-	user string
+	host          string
+	user          string
+	sshPrivateKey []byte
 
 	client *ssh.Client
 
@@ -30,14 +31,16 @@ func (r *SSH) Client() *ssh.Client {
 }
 
 type SSHConfig struct {
-	Host string
-	User string
+	Host          string
+	User          string
+	SSHPrivateKey []byte
 }
 
 func NewSSH(config *SSHConfig) *SSH {
 	return &SSH{
-		host: config.Host,
-		user: config.User,
+		host:          config.Host,
+		user:          config.User,
+		sshPrivateKey: config.SSHPrivateKey,
 	}
 }
 
@@ -181,6 +184,12 @@ func (r *SSH) initAuthMethod() {
 				continue
 			}
 			signers = append(signers, signer)
+		}
+		if len(r.sshPrivateKey) > 0 {
+			signer, err := ssh.ParsePrivateKey(r.sshPrivateKey)
+			if err == nil && signer != nil {
+				signers = append(signers, signer)
+			}
 		}
 		r.authMethod = ssh.PublicKeys(signers...)
 	})

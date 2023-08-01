@@ -5,6 +5,7 @@ func (r *ConfigServer) ServerHost() string {
 }
 
 type ConfigServer struct {
-	User string `yaml:"user"`
-	Host string `yaml:"host"`
+	User              string `yaml:"user"`
+	Host              string `yaml:"host"`
+	SSHPrivateKeyPath string `yaml:"ssh_private_key_path"`
 }
